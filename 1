@@ -1,0 +1,154 @@
+// Interfaces for different responsibilities
+
+interface BankOperations {
+    void deposit(double amount) throws InvalidAmountException;
+    void withdraw(double amount) throws InvalidAmountException, InsufficientFundsException;
+    void transfer(BankOperations targetAccount, double amount)
+            throws InvalidAmountException, InsufficientFundsException;
+}
+
+interface CustomerOperations {
+    void updateAddress(String newAddress);
+    void viewProfile();
+}
+
+// Custom exception for invalid amounts
+class InvalidAmountException extends Exception {
+    public InvalidAmountException(String message) {
+        super(message);
+    }
+}
+
+// Custom exception for insufficient balance
+class InsufficientFundsException extends Exception {
+    public InsufficientFundsException(String message) {
+        super(message);
+    }
+}
+
+// BankAccount class implementing multiple interfaces
+class BankAccount implements BankOperations, CustomerOperations {
+
+    private String accountNumber;
+    private String customerName;
+    private String address;
+    private double balance;
+
+    public BankAccount(String accountNumber, String customerName, String address, double openingBalance)
+            throws InvalidAmountException {
+        if (openingBalance < 0) {
+            throw new InvalidAmountException("Opening balance cannot be negative.");
+        }
+        this.accountNumber = accountNumber;
+        this.customerName = customerName;
+        this.address = address;
+        this.balance = openingBalance;
+    }
+
+    // Implementation of BankOperations
+
+    @Override
+    public void deposit(double amount) throws InvalidAmountException {
+        if (amount <= 0) {
+            throw new InvalidAmountException("Deposit amount must be positive.");
+        }
+        balance += amount;
+        System.out.println("Deposited: " + amount + ". New balance: " + balance);
+    }
+
+    @Override
+    public void withdraw(double amount) throws InvalidAmountException, InsufficientFundsException {
+        if (amount <= 0) {
+            throw new InvalidAmountException("Withdrawal amount must be positive.");
+        }
+        if (amount > balance) {
+            throw new InsufficientFundsException("Insufficient funds. Current balance: " + balance);
+        }
+        balance -= amount;
+        System.out.println("Withdrew: " + amount + ". New balance: " + balance);
+    }
+
+    @Override
+    public void transfer(BankOperations targetAccount, double amount)
+            throws InvalidAmountException, InsufficientFundsException {
+        if (targetAccount == null) {
+            throw new IllegalArgumentException("Target account cannot be null.");
+        }
+        // Withdraw from this account, deposit to target account
+        this.withdraw(amount);
+        targetAccount.deposit(amount);
+        System.out.println("Transferred: " + amount + " from " + accountNumber +
+                           " to target account. Remaining balance: " + balance);
+    }
+
+    // Implementation of CustomerOperations
+
+    @Override
+    public void updateAddress(String newAddress) {
+        if (newAddress == null || newAddress.trim().isEmpty()) {
+            System.out.println("Address cannot be empty.");
+            return;
+        }
+        this.address = newAddress;
+        System.out.println("Address updated to: " + this.address);
+    }
+
+    @Override
+    public void viewProfile() {
+        System.out.println("----- Customer Profile -----");
+        System.out.println("Account Number: " + accountNumber);
+        System.out.println("Name          : " + customerName);
+        System.out.println("Address       : " + address);
+        System.out.println("Balance       : " + balance);
+        System.out.println("----------------------------");
+    }
+}
+
+// Main class to test the program
+public class BankApp {
+    public static void main(String[] args) {
+        try {
+            BankAccount acc1 = new BankAccount("A1001", "Alice", "City A", 5000);
+            BankAccount acc2 = new BankAccount("A1002", "Bob", "City B", 2000);
+
+            // View initial profiles
+            acc1.viewProfile();
+            acc2.viewProfile();
+
+            // Perform some valid operations
+            acc1.deposit(1500);
+            acc1.withdraw(1000);
+            acc1.updateAddress("New City A");
+
+            // Transfer funds from acc1 to acc2
+            acc1.transfer(acc2, 2000);
+
+            // View profiles after transfer
+            acc1.viewProfile();
+            acc2.viewProfile();
+
+            // Intentionally cause exceptions to show handling:
+
+            // 1. Invalid deposit amount
+            try {
+                acc1.deposit(-100);
+            } catch (InvalidAmountException e) {
+                System.out.println("Error during deposit: " + e.getMessage());
+            }
+
+            // 2. Withdrawal more than balance
+            try {
+                acc2.withdraw(10000);
+            } catch (InvalidAmountException | InsufficientFundsException e) {
+                System.out.println("Error during withdrawal: " + e.getMessage());
+            }
+
+        } catch (InvalidAmountException e) {
+            // Exception from constructor (opening balance)
+            System.out.println("Failed to create account: " + e.getMessage());
+        } catch (Exception e) {
+            // Generic catch for any other unexpected exceptions
+            System.out.println("Unexpected error: " + e.getMessage());
+        }
+    }
+}
