@@ -1,0 +1,267 @@
+import java.util.*;
+import java.util.regex.Pattern;
+
+/* -------------------- Student Class -------------------- */
+class Student {
+    private int rollNo;
+    private String name;
+    private String email;
+    private String phone;
+
+    public Student(int rollNo, String name, String email, String phone) {
+        this.rollNo = rollNo;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+    }
+
+    public int getRollNo() {
+        return rollNo;
+    }
+
+    @Override
+    public String toString() {
+        return "Roll No: " + rollNo +
+                " | Name: " + name +
+                " | Email: " + email +
+                " | Phone: " + phone;
+    }
+}
+
+/* -------------------- Interface -------------------- */
+interface StudentService {
+    void addStudent();
+    void displayAllStudents();
+    void removeStudentByRollNo();
+    void searchStudentByRollNo();
+}
+
+/* -------------------- Manager Class -------------------- */
+class StudentRecordManager implements StudentService {
+
+    // Using List interface with ArrayList
+    private List<Student> studentList = new ArrayList<>();
+
+    // Using Vector collection
+    private Vector<Student> studentVector = new Vector<>();
+
+    private Scanner scanner = new Scanner(System.in);
+
+    // REGEX Patterns
+    private final Pattern namePattern = Pattern.compile("^[A-Za-z ]{3,30}$");
+    private final Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private final Pattern phonePattern = Pattern.compile("^[6-9][0-9]{9}$");
+
+    /* -------------------- Input Helpers -------------------- */
+
+    private int inputRollNo() {
+        while (true) {
+            try {
+                System.out.print("Enter Roll Number: ");
+                int rollNo = Integer.parseInt(scanner.nextLine());
+
+                if (rollNo <= 0) {
+                    throw new IllegalArgumentException("Roll number must be greater than 0.");
+                }
+                return rollNo;
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    private String inputName() {
+        while (true) {
+            System.out.print("Enter Name: ");
+            String name = scanner.nextLine().trim();
+
+            if (namePattern.matcher(name).matches()) {
+                return name;
+            }
+            System.out.println("Invalid name. Use only alphabets (3 to 30 characters).");
+        }
+    }
+
+    private String inputEmail() {
+        while (true) {
+            System.out.print("Enter Email: ");
+            String email = scanner.nextLine().trim();
+
+            if (emailPattern.matcher(email).matches()) {
+                return email;
+            }
+            System.out.println("Invalid email format. Example: abc@gmail.com");
+        }
+    }
+
+    private String inputPhone() {
+        while (true) {
+            System.out.print("Enter Phone Number: ");
+            String phone = scanner.nextLine().trim();
+
+            if (phonePattern.matcher(phone).matches()) {
+                return phone;
+            }
+            System.out.println("Invalid phone number. Must be 10 digits and start with 6-9.");
+        }
+    }
+
+    private boolean rollExists(int rollNo) {
+        for (Student s : studentList) {
+            if (s.getRollNo() == rollNo) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* -------------------- Operations -------------------- */
+
+    @Override
+    public void addStudent() {
+        try {
+            System.out.println("\nAdd Student Record");
+
+            int rollNo = inputRollNo();
+
+            if (rollExists(rollNo)) {
+                System.out.println("Student with this roll number already exists.");
+                return;
+            }
+
+            String name = inputName();
+            String email = inputEmail();
+            String phone = inputPhone();
+
+            Student student = new Student(rollNo, name, email, phone);
+
+            // Adding to both collections
+            studentList.add(student);
+            studentVector.add(student);
+
+            System.out.println("Student record added successfully.");
+
+        } catch (Exception e) {
+            System.out.println("Error while adding student: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void displayAllStudents() {
+        System.out.println("\nDisplay All Students");
+
+        if (studentList.isEmpty()) {
+            System.out.println("No student records found.");
+            return;
+        }
+
+        System.out.println("\nStudents stored in ArrayList (List Interface):");
+        for (Student s : studentList) {
+            System.out.println(s);
+        }
+
+        System.out.println("\nStudents stored in Vector:");
+        for (Student s : studentVector) {
+            System.out.println(s);
+        }
+    }
+
+    @Override
+    public void removeStudentByRollNo() {
+        System.out.println("\nRemove Student Record");
+
+        if (studentList.isEmpty()) {
+            System.out.println("No records available to remove.");
+            return;
+        }
+
+        int rollNo = inputRollNo();
+        boolean removed = false;
+
+        // Remove from List safely using Iterator
+        Iterator<Student> listIterator = studentList.iterator();
+        while (listIterator.hasNext()) {
+            Student s = listIterator.next();
+            if (s.getRollNo() == rollNo) {
+                listIterator.remove();
+                removed = true;
+                break;
+            }
+        }
+
+        // Remove from Vector also
+        Iterator<Student> vectorIterator = studentVector.iterator();
+        while (vectorIterator.hasNext()) {
+            Student s = vectorIterator.next();
+            if (s.getRollNo() == rollNo) {
+                vectorIterator.remove();
+                break;
+            }
+        }
+
+        if (removed) {
+            System.out.println("Student removed successfully.");
+        } else {
+            System.out.println("Student not found with roll number: " + rollNo);
+        }
+    }
+
+    @Override
+    public void searchStudentByRollNo() {
+        System.out.println("\nSearch Student Record");
+
+        if (studentList.isEmpty()) {
+            System.out.println("No student records available.");
+            return;
+        }
+
+        int rollNo = inputRollNo();
+
+        for (Student s : studentList) {
+            if (s.getRollNo() == rollNo) {
+                System.out.println("Student Found:");
+                System.out.println(s);
+                return;
+            }
+        }
+
+        System.out.println("Student not found with roll number: " + rollNo);
+    }
+}
+
+/* -------------------- Main Class -------------------- */
+public class StudentRecordSystem {
+    public static void main(String[] args) {
+
+        StudentService manager = new StudentRecordManager();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n--------------------------------");
+            System.out.println("STUDENT RECORD MANAGEMENT SYSTEM");
+            System.out.println("--------------------------------");
+            System.out.println("1. Add Student");
+            System.out.println("2. Display All Students");
+            System.out.println("3. Remove Student by Roll Number");
+            System.out.println("4. Search Student by Roll Number");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+
+                switch (choice) {
+                    case 1:
+                        manager.addStudent();
+                        break;
+                    case 2:
+                        manager.displayAllStudents();
+                        break;
+                    case 3:
+                        manager.removeStudentByRollNo();
+
+               
+  
