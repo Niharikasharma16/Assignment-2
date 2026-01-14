@@ -1,0 +1,246 @@
+import java.util.*;
+import java.util.regex.Pattern;
+
+/* Interface */
+interface EmployeeOperations {
+    void addEmployee(Employee e);
+    void displayEmployees();
+    void searchEmployee(String empId);
+    void removeEmployee(String empId);
+    void demonstrateNullSupport();
+}
+
+/* Employee Class */
+class Employee {
+    private String empId;
+    private String name;
+    private String department;
+    private double salary;
+
+    public Employee(String empId, String name, String department, double salary) {
+        this.empId = empId;
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+    }
+
+    public String getEmpId() {
+        return empId;
+    }
+
+    @Override
+    public String toString() {
+        return "EmployeeID=" + empId +
+                ", Name=" + name +
+                ", Department=" + department +
+                ", Salary=" + salary;
+    }
+}
+
+/* Employee Manager Class */
+class EmployeeManager implements EmployeeOperations {
+
+    private Map<String, Employee> map;
+
+    // REGEX: Employee ID must be like EMP101, EMP999 etc.
+    private static final String EMP_ID_REGEX = "^EMP\\d{3}$";
+    private static final Pattern pattern = Pattern.compile(EMP_ID_REGEX);
+
+    public EmployeeManager(Map<String, Employee> map) {
+        this.map = map;
+    }
+
+    private boolean isValidEmpId(String empId) {
+        return pattern.matcher(empId).matches();
+    }
+
+    @Override
+    public void addEmployee(Employee e) {
+        try {
+            if (e == null) {
+                throw new IllegalArgumentException("Employee object cannot be null.");
+            }
+
+            String empId = e.getEmpId();
+
+            if (empId == null) {
+                throw new IllegalArgumentException("Employee ID cannot be null.");
+            }
+
+            if (!isValidEmpId(empId)) {
+                throw new IllegalArgumentException("Invalid Employee ID format. Use EMP### (Example: EMP101).");
+            }
+
+            map.put(empId, e);
+            System.out.println("Employee added successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while adding employee: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void displayEmployees() {
+        try {
+            if (map.isEmpty()) {
+                System.out.println("No employee records found.");
+                return;
+            }
+
+            System.out.println("\nEmployee Records:");
+            for (Map.Entry<String, Employee> entry : map.entrySet()) {
+                System.out.println(entry.getValue());
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error while displaying employees: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void searchEmployee(String empId) {
+        try {
+            if (empId == null) {
+                throw new IllegalArgumentException("Employee ID cannot be null.");
+            }
+
+            if (!isValidEmpId(empId)) {
+                throw new IllegalArgumentException("Invalid Employee ID format. Use EMP###.");
+            }
+
+            Employee emp = map.get(empId);
+
+            if (emp != null) {
+                System.out.println("Employee found: " + emp);
+            } else {
+                System.out.println("Employee not found for ID: " + empId);
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error while searching employee: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void removeEmployee(String empId) {
+        try {
+            if (empId == null) {
+                throw new IllegalArgumentException("Employee ID cannot be null.");
+            }
+
+            if (!isValidEmpId(empId)) {
+                throw new IllegalArgumentException("Invalid Employee ID format. Use EMP###.");
+            }
+
+            Employee removed = map.remove(empId);
+
+            if (removed != null) {
+                System.out.println("Employee removed: " + removed);
+            } else {
+                System.out.println("Employee not found to remove for ID: " + empId);
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error while removing employee: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void demonstrateNullSupport() {
+        System.out.println("\nNull Key and Null Value Support Test:");
+
+        try {
+            map.put(null, new Employee("EMP999", "NullKeyEmployee", "Test", 1000));
+            System.out.println("Null key insertion succeeded.");
+        } catch (Exception ex) {
+            System.out.println("Null key insertion failed: " + ex);
+        }
+
+        try {
+            map.put("EMP888", null);
+            System.out.println("Null value insertion succeeded.");
+        } catch (Exception ex) {
+            System.out.println("Null value insertion failed: " + ex);
+        }
+    }
+}
+
+/* Main Class */
+public class EmployeeRecordSystem {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("==============================================");
+        System.out.println(" Employee Record System using Map Implementations ");
+        System.out.println("==============================================");
+
+        System.out.println("\nChoose Map Type:");
+        System.out.println("1. HashMap");
+        System.out.println("2. Hashtable");
+        System.out.println("3. TreeMap");
+
+        System.out.print("Enter choice: ");
+        int choice;
+
+        try {
+            choice = sc.nextInt();
+            sc.nextLine();
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input. Defaulting to HashMap.");
+            sc.nextLine();
+            choice = 1;
+        }
+
+        Map<String, Employee> selectedMap;
+
+        switch (choice) {
+            case 1:
+                selectedMap = new HashMap<>();
+                System.out.println("HashMap selected.");
+                break;
+
+            case 2:
+                selectedMap = new Hashtable<>();
+                System.out.println("Hashtable selected.");
+                break;
+
+            case 3:
+                selectedMap = new TreeMap<>();
+                System.out.println("TreeMap selected.");
+                break;
+
+            default:
+                System.out.println("Invalid choice. Defaulting to HashMap.");
+                selectedMap = new HashMap<>();
+        }
+
+        EmployeeManager manager = new EmployeeManager(selectedMap);
+
+        while (true) {
+            System.out.println("\n------------- MENU -------------");
+            System.out.println("1. Add Employee");
+            System.out.println("2. Display All Employees");
+            System.out.println("3. Search Employee by ID");
+            System.out.println("4. Remove Employee by ID");
+            System.out.println("5. Demonstrate Null Support");
+            System.out.println("6. Exit");
+            System.out.print("Enter your choice: ");
+
+            int menuChoice;
+
+            try {
+                menuChoice = sc.nextInt();
+                sc.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Please enter a valid number.");
+                sc.nextLine();
+                continue;
+            }
+
+            switch (menuChoice) {
+                case 1:
+                    try {
+                        System.out.print("Enter Employee ID (Format EMP###): ");
+                        String id = sc.nextLine();
