@@ -1,0 +1,143 @@
+import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+public class Regex {
+
+    private static final Scanner scanner = new Scanner(System.in);
+
+    // Regex patterns
+    // Indian-style mobile: 10 digits, first digit 6-9 (you can adjust as needed)
+    private static final String MOBILE_REGEX = "^[6-9][0-9]{9}$";
+
+    // Simple email pattern (not perfect, but good for most cases)
+    private static final String EMAIL_REGEX =
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+
+    // Username: 5–15 chars, letters, digits, underscore only, must start with a letter
+    private static final String USERNAME_REGEX =
+            "^[A-Za-z][A-Za-z0-9_]{4,14}$";
+
+    // Password: at least 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char
+    private static final String PASSWORD_REGEX =
+            "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+
+    public static void main(String[] args) {
+        int choice = 0;
+
+        System.out.println("=== REGEX Input Validation Demo ===");
+
+        while (true) {
+            try {
+                printMenu();
+                System.out.print("Enter your choice: ");
+
+                // Read choice safely
+                String inputChoice = scanner.nextLine().trim();
+                choice = Integer.parseInt(inputChoice);
+
+                switch (choice) {
+                    case 1:
+                        validateMobile();
+                        break;
+                    case 2:
+                        validateEmail();
+                        break;
+                    case 3:
+                        validateUsername();
+                        break;
+                    case 4:
+                        validatePassword();
+                        break;
+                    case 5:
+                        System.out.println("Exiting... Thank you!");
+                        return;
+                    default:
+                        System.out.println("Invalid menu choice. Please try again.\n");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid numeric choice.\n");
+            } catch (Exception e) {
+                // Generic safeguard for any unexpected runtime errors
+                System.out.println("An unexpected error occurred: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void printMenu() {
+        System.out.println();
+        System.out.println("1. Validate Mobile Number");
+        System.out.println("2. Validate Email ID");
+        System.out.println("3. Validate Username");
+        System.out.println("4. Validate Password");
+        System.out.println("5. Exit");
+    }
+
+    private static void validateMobile() {
+        System.out.print("Enter Mobile Number: ");
+        String mobile = scanner.nextLine().trim();
+
+        if (matchesRegex(mobile, MOBILE_REGEX)) {
+            System.out.println("Valid Mobile Number. Welcome!");
+        } else {
+            System.out.println("Invalid Mobile Number. Please try again.");
+        }
+        System.out.println();
+    }
+
+    private static void validateEmail() {
+        System.out.print("Enter Email ID: ");
+        String email = scanner.nextLine().trim();
+
+        if (matchesRegex(email, EMAIL_REGEX)) {
+            System.out.println("Valid Email ID. Welcome!");
+        } else {
+            System.out.println("Invalid Email ID. Please try again.");
+        }
+        System.out.println();
+    }
+
+    private static void validateUsername() {
+        System.out.print("Enter Username: ");
+        String username = scanner.nextLine().trim();
+
+        if (matchesRegex(username, USERNAME_REGEX)) {
+            System.out.println("Valid Username. Welcome, " + username + "!");
+        } else {
+            System.out.println(
+                "Invalid Username. It must:\n" +
+                "- Start with a letter\n" +
+                "- Be 5–15 characters long\n" +
+                "- Contain only letters, digits, and underscore"
+            );
+        }
+        System.out.println();
+    }
+
+    private static void validatePassword() {
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+
+        if (matchesRegex(password, PASSWORD_REGEX)) {
+            System.out.println("Valid Password. Login Successful. Welcome!");
+        } else {
+            System.out.println(
+                "Invalid Password. It must:\n" +
+                "- Be at least 8 characters long\n" +
+                "- Contain at least one uppercase letter\n" +
+                "- Contain at least one lowercase letter\n" +
+                "- Contain at least one digit\n" +
+                "- Contain at least one special character (@ $ ! % * ? &)"
+            );
+        }
+        System.out.println();
+    }
+
+    // Utility method using regex
+    private static boolean matchesRegex(String input, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        return matcher.matches();
+    }
+}
