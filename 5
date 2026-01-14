@@ -1,0 +1,437 @@
+import java.util.*;
+import java.util.regex.Pattern;
+
+/* Interface */
+interface UniversityOperations {
+    void addStudent(Student s);
+    void displayAllStudents();
+    void searchStudentById(String studentId);
+    void removeStudentById(String studentId);
+    void sortStudentsByMarks();
+    void convertHashMapToTreeMap();
+    void countStudentsCourseWise();
+    void storeUniqueCourseNames();
+    void displayAllCourses();
+    void showRecentOperations();
+}
+
+/* Student Class */
+class Student {
+    private String studentId;
+    private String name;
+    private String course;
+    private double marks;
+
+    public Student(String studentId, String name, String course, double marks) {
+        this.studentId = studentId;
+        this.name = name;
+        this.course = course;
+        this.marks = marks;
+    }
+
+    public String getStudentId() {
+        return studentId;
+    }
+
+    public String getCourse() {
+        return course;
+    }
+
+    public double getMarks() {
+        return marks;
+    }
+
+    @Override
+    public String toString() {
+        return "StudentID=" + studentId +
+                ", Name=" + name +
+                ", Course=" + course +
+                ", Marks=" + marks;
+    }
+}
+
+/* Main Management Class */
+class UniversityManager implements UniversityOperations {
+
+    // ArrayList used as main storage (List)
+    private List<Student> studentList = new ArrayList<>();
+
+    // Vector used to store all added students (demonstration)
+    private Vector<Student> studentVector = new Vector<>();
+
+    // Stack used to store recent operations (demonstration)
+    private Stack<String> operationStack = new Stack<>();
+
+    // HashMap for fast searching by Student ID
+    private HashMap<String, Student> studentHashMap = new HashMap<>();
+
+    // Hashtable for demonstration (no null key/value allowed)
+    private Hashtable<String, Student> studentHashtable = new Hashtable<>();
+
+    // TreeMap for sorted student ID mapping
+    private TreeMap<String, Student> studentTreeMap = new TreeMap<>();
+
+    // Set to store unique course names
+    private Set<String> uniqueCourses = new HashSet<>();
+
+    // REGEX: Student ID must be like STU101, STU999
+    private static final String STUDENT_ID_REGEX = "^STU\\d{3}$";
+    private static final Pattern pattern = Pattern.compile(STUDENT_ID_REGEX);
+
+    private boolean isValidStudentId(String studentId) {
+        return pattern.matcher(studentId).matches();
+    }
+
+    // Prevent duplicates using HashMap
+    private boolean isDuplicateId(String studentId) {
+        return studentHashMap.containsKey(studentId);
+    }
+
+    @Override
+    public void addStudent(Student s) {
+        try {
+            if (s == null) {
+                throw new IllegalArgumentException("Student object cannot be null.");
+            }
+
+            String id = s.getStudentId();
+
+            if (id == null || !isValidStudentId(id)) {
+                throw new IllegalArgumentException("Invalid Student ID format. Use STU### (Example: STU101).");
+            }
+
+            if (isDuplicateId(id)) {
+                throw new IllegalArgumentException("Duplicate entry not allowed. Student ID already exists.");
+            }
+
+            studentList.add(s);
+            studentVector.add(s);
+            studentHashMap.put(id, s);
+
+            // Hashtable demonstration
+            studentHashtable.put(id, s);
+
+            // Add course to unique set
+            uniqueCourses.add(s.getCourse());
+
+            operationStack.push("Added student: " + id);
+            System.out.println("Student added successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while adding student: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void displayAllStudents() {
+        try {
+            if (studentList.isEmpty()) {
+                System.out.println("No student records found.");
+                return;
+            }
+
+            System.out.println("\nAll Students (ArrayList):");
+            for (Student s : studentList) {
+                System.out.println(s);
+            }
+
+            operationStack.push("Displayed all students.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while displaying students: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void searchStudentById(String studentId) {
+        try {
+            if (studentId == null || !isValidStudentId(studentId)) {
+                throw new IllegalArgumentException("Invalid Student ID format. Use STU###.");
+            }
+
+            Student s = studentHashMap.get(studentId);
+
+            if (s != null) {
+                System.out.println("Student found: " + s);
+            } else {
+                System.out.println("Student not found for ID: " + studentId);
+            }
+
+            operationStack.push("Searched student: " + studentId);
+
+        } catch (Exception ex) {
+            System.out.println("Error while searching student: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void removeStudentById(String studentId) {
+        try {
+            if (studentId == null || !isValidStudentId(studentId)) {
+                throw new IllegalArgumentException("Invalid Student ID format. Use STU###.");
+            }
+
+            Student removed = studentHashMap.remove(studentId);
+
+            if (removed != null) {
+                studentList.remove(removed);
+                studentVector.remove(removed);
+                studentHashtable.remove(studentId);
+
+                operationStack.push("Removed student: " + studentId);
+                System.out.println("Student removed successfully.");
+
+            } else {
+                System.out.println("Student not found for removal: " + studentId);
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error while removing student: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void sortStudentsByMarks() {
+        try {
+            if (studentList.isEmpty()) {
+                System.out.println("No students available to sort.");
+                return;
+            }
+
+            // Sort by marks (descending)
+            studentList.sort((a, b) -> Double.compare(b.getMarks(), a.getMarks()));
+
+            System.out.println("\nStudents sorted by marks (Descending):");
+            for (Student s : studentList) {
+                System.out.println(s);
+            }
+
+            operationStack.push("Sorted students by marks.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while sorting students: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void convertHashMapToTreeMap() {
+        try {
+            if (studentHashMap.isEmpty()) {
+                System.out.println("HashMap is empty. Cannot convert.");
+                return;
+            }
+
+            studentTreeMap = new TreeMap<>(studentHashMap);
+
+            System.out.println("\nConverted HashMap to TreeMap (Sorted by Student ID):");
+            for (Map.Entry<String, Student> entry : studentTreeMap.entrySet()) {
+                System.out.println(entry.getValue());
+            }
+
+            operationStack.push("Converted HashMap to TreeMap.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while converting HashMap to TreeMap: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void countStudentsCourseWise() {
+        try {
+            if (studentList.isEmpty()) {
+                System.out.println("No student records available.");
+                return;
+            }
+
+            Map<String, Integer> courseCountMap = new HashMap<>();
+
+            for (Student s : studentList) {
+                courseCountMap.put(s.getCourse(), courseCountMap.getOrDefault(s.getCourse(), 0) + 1);
+            }
+
+            System.out.println("\nStudents Count Course-wise:");
+            for (Map.Entry<String, Integer> entry : courseCountMap.entrySet()) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+            }
+
+            operationStack.push("Counted students course-wise.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while counting students: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void storeUniqueCourseNames() {
+        try {
+            uniqueCourses.clear();
+
+            for (Student s : studentList) {
+                uniqueCourses.add(s.getCourse());
+            }
+
+            System.out.println("Unique course names stored successfully.");
+            operationStack.push("Stored unique course names.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while storing unique courses: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void displayAllCourses() {
+        try {
+            if (uniqueCourses.isEmpty()) {
+                System.out.println("No courses found. Add students first.");
+                return;
+            }
+
+            System.out.println("\nAll Unique Courses:");
+            for (String course : uniqueCourses) {
+                System.out.println(course);
+            }
+
+            operationStack.push("Displayed all courses.");
+
+        } catch (Exception ex) {
+            System.out.println("Error while displaying courses: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void showRecentOperations() {
+        try {
+            if (operationStack.isEmpty()) {
+                System.out.println("No operations performed yet.");
+                return;
+            }
+
+            System.out.println("\nRecent Operations (Stack - LIFO):");
+            while (!operationStack.isEmpty()) {
+                System.out.println(operationStack.pop());
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error while showing operations: " + ex.getMessage());
+        }
+    }
+}
+
+/* Main Class */
+public class UniversityStudentManagementSystem {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+        UniversityManager manager = new UniversityManager();
+
+        while (true) {
+            System.out.println("\n==============================");
+            System.out.println(" University Student Management ");
+            System.out.println("==============================");
+            System.out.println("1. Add Student");
+            System.out.println("2. Display All Students");
+            System.out.println("3. Search Student by ID");
+            System.out.println("4. Remove Student by ID");
+            System.out.println("5. Sort Students by Marks");
+            System.out.println("6. Convert HashMap to TreeMap");
+            System.out.println("7. Count Students Course-wise");
+            System.out.println("8. Store Unique Course Names");
+            System.out.println("9. Display All Courses");
+            System.out.println("10. Show Recent Operations");
+            System.out.println("11. Exit");
+
+            System.out.print("Enter your choice: ");
+
+            int choice;
+            try {
+                choice = sc.nextInt();
+                sc.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                sc.nextLine();
+                continue;
+            }
+
+            switch (choice) {
+                case 1:
+                    try {
+                        System.out.print("Enter Student ID (Format STU###): ");
+                        String id = sc.nextLine();
+
+                        System.out.print("Enter Student Name: ");
+                        String name = sc.nextLine();
+
+                        System.out.print("Enter Course Name: ");
+                        String course = sc.nextLine();
+
+                        System.out.print("Enter Marks: ");
+                        double marks = sc.nextDouble();
+                        sc.nextLine();
+
+                        if (marks < 0 || marks > 100) {
+                            throw new IllegalArgumentException("Marks must be between 0 and 100.");
+                        }
+
+                        Student s = new Student(id, name, course, marks);
+                        manager.addStudent(s);
+
+                    } catch (InputMismatchException e) {
+                        System.out.println("Marks must be a valid number.");
+                        sc.nextLine();
+                    } catch (Exception ex) {
+                        System.out.println("Error: " + ex.getMessage());
+                    }
+                    break;
+
+                case 2:
+                    manager.displayAllStudents();
+                    break;
+
+                case 3:
+                    System.out.print("Enter Student ID to Search: ");
+                    String searchId = sc.nextLine();
+                    manager.searchStudentById(searchId);
+                    break;
+
+                case 4:
+                    System.out.print("Enter Student ID to Remove: ");
+                    String removeId = sc.nextLine();
+                    manager.removeStudentById(removeId);
+                    break;
+
+                case 5:
+                    manager.sortStudentsByMarks();
+                    break;
+
+                case 6:
+                    manager.convertHashMapToTreeMap();
+                    break;
+
+                case 7:
+                    manager.countStudentsCourseWise();
+                    break;
+
+                case 8:
+                    manager.storeUniqueCourseNames();
+                    break;
+
+                case 9:
+                    manager.displayAllCourses();
+                    break;
+
+                case 10:
+                    manager.showRecentOperations();
+                    break;
+
+                case 11:
+                    System.out.println("Exiting program.");
+                    sc.close();
+                    return;
+
+                default:
+                    System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+}
